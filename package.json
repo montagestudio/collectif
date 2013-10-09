@@ -1,0 +1,26 @@
+{
+    "name": "collectif",
+    "version": "0.15.0",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com:declarativ/collectif.git"
+    },
+    "dependencies": {
+        "montage": "git+ssh://git@github.com:montagejs/montage.git#eef9773bcdc67d1d8185227be93275226d60ba03",
+        "matte": "git+ssh://git@github.com:montagejs/matte.git#ed593caeed63dc337e3ceff7d70f144f79dc1697",
+        "q-connection": "0.5.5",
+        "qs": "0.5.2"
+    },
+    "devDependencies": {
+        "jasmine-node": "1.2.2",
+        "montage-testing": "0.2.0",
+        "jshint": "2.1.9"
+    },
+    "scripts": {
+        "test": "node test/run.js",
+        "lint": "./node_modules/.bin/jshint --verbose .",
+		"lumieres": "node test/functional/run.js"
+    },
+    "manifest": true
+}

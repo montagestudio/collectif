@@ -28,6 +28,14 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
         }
     },
 
+    init: {
+        value: function (backendName) {
+            this._backendName = backendName;
+
+            return this;
+        }
+    },
+
     _undoMessagePromise: {
         value: defaultLocalizer.localize("undo_label", "Undo {label}")
     },
@@ -134,13 +142,13 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
 
     availableExtensions: {
         get: function () {
-            return this.backend.get("filament-backend").invoke("getExtensions");
+            return this.backend.get(this._backendName).invoke("getExtensions");
         }
     },
 
     getExtensionsAt: {
         value: function (url) {
-            return this.backend.get("filament-backend").invoke("getExtensions", this.convertBackendUrlToPath(url));
+            return this.backend.get(this._backendName).invoke("getExtensions", this.convertBackendUrlToPath(url));
         }
     },
 
@@ -165,7 +173,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
 
     componentsInPackage: {
         value: function (packageUrl) {
-            return this.backend.get("filament-backend").invoke("listPackage", this.convertBackendUrlToPath(packageUrl), true).then(function (fileDescriptors) {
+            return this.backend.get(this._backendName).invoke("listPackage", this.convertBackendUrlToPath(packageUrl), true).then(function (fileDescriptors) {
                 return fileDescriptors.filter(function (fd) {
                     return (/\.reel\/$/).test(fd.url);
                 }).map(function (fd) {
@@ -178,7 +186,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
 
     listTreeAtUrl: {
         value: function (url) {
-            return this.backend.get("filament-backend").invoke("listTree", url).then(function (fileDescriptors) {
+            return this.backend.get(this._backendName).invoke("listTree", url).then(function (fileDescriptors) {
                 return fileDescriptors.map(function (fd) {
                     return FileDescriptor.create().initWithUrlAndStat(fd.url, fd.stat);
                 });
@@ -188,7 +196,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
 
     list: {
         value: function (url) {
-            return this.backend.get("filament-backend").invoke("list", url).then(function (fileDescriptors) {
+            return this.backend.get(this._backendName).invoke("list", url).then(function (fileDescriptors) {
                 return fileDescriptors.map(function (fd) {
                     return FileDescriptor.create().initWithUrlAndStat(fd.url, fd.stat);
                 });
@@ -265,7 +273,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
                     return self.backend.get("application").invoke("moveToTrash", applicationUrl);
                 }
             }).then(function () {
-                return self.backend.get("filament-backend").invoke("createApplication", name, packagePath)
+                return self.backend.get(this._backendName).invoke("createApplication", name, packagePath)
                     .then(function (minitResults) {
                         if (!minitResults || !minitResults.name) {
                             console.log("TODO: remove this error checking when minit returns promises: (see pull request montagejs/minit/pull/47), using the name entered by user.");
@@ -285,7 +293,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
 
     createComponent: {
         value: function (name, packageHome, destination) {
-            return this.backend.get("filament-backend").invoke("createComponent", name, this.convertBackendUrlToPath(packageHome), destination)
+            return this.backend.get(this._backendName).invoke("createComponent", name, this.convertBackendUrlToPath(packageHome), destination)
                 .then(function (path) {
                     return "fs://localhost" + path + "/";
                 });
@@ -294,7 +302,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
 
     createModule: {
         value: function (name, packageHome, destination) {
-            return this.backend.get("filament-backend").invoke("createModule", name, this.convertBackendUrlToPath(packageHome), destination);
+            return this.backend.get(this._backendName).invoke("createModule", name, this.convertBackendUrlToPath(packageHome), destination);
         }
     },
 
@@ -332,7 +340,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
 
     installDependencies: {
         value: function (config) {
-            return this.backend.get("filament-backend").invoke("installDependencies", config);
+            return this.backend.get(this._backendName).invoke("installDependencies", config);
         }
     },
 
@@ -355,7 +363,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
                 backend = Connection(new WebSocket("ws://localhost:" + lumieres.nodePort), local);
 
             path = this.convertBackendUrlToPath(path);
-            return backend.get("filament-backend").invoke("watch", path, ignoreSubPaths, Promise.master(local));
+            return backend.get(this._backendName).invoke("watch", path, ignoreSubPaths, Promise.master(local));
         }
     },
 
@@ -432,7 +440,7 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
             if (url.indexOf("http") !== 0) {
                 Promise.reject(new Error(url + " does not begin with 'http'"));
             }
-            return this.backend.get("filament-backend").invoke("open", url);
+            return this.backend.get(this._backendName).invoke("open", url);
         }
     }
 

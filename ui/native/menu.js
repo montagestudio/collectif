@@ -9,7 +9,7 @@
 
 var Montage = require("montage/core/core").Montage,
     Promise = require("montage/core/promise").Promise,
-    MenuItem = require("ui/native-menu/menu-item").MenuItem,
+    MenuItem = require("./menu-item").MenuItem,
     defaultEventManager = require("montage/core/event/event-manager").defaultEventManager;
 
 var getMainMenu = null;

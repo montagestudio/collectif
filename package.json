@@ -18,9 +18,7 @@
         "jshint": "2.1.9"
     },
     "scripts": {
-        "test": "node test/run.js",
-        "lint": "./node_modules/.bin/jshint --verbose .",
-		"lumieres": "node test/functional/run.js"
+        "lint": "./node_modules/.bin/jshint --verbose ."
     },
     "manifest": true
 }

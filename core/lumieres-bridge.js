@@ -36,6 +36,17 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
         }
     },
 
+    /**
+     * An object that implements `onConnect` and `onDisconnect` functions.
+     * These are called when the backend is connected and disconnected
+     * respectively.
+     *
+     * @type {Object}
+     */
+    connectionHandler: {
+        value: null
+    },
+
     _undoMessagePromise: {
         value: defaultLocalizer.localize("undo_label", "Undo {label}")
     },
@@ -68,9 +79,16 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
                 var connection = adaptConnection(new WebSocket("ws://localhost:" + lumieres.nodePort));
                 connection.closed.then(function () {
                     self._backend = null;
+                    if (self.connectionHandler && self.connectionHandler.onDisconnect) {
+                        self.connectionHandler.onDisconnect();
+                    }
                 });
 
                 self._backend = Connection(connection);
+
+                if (self.connectionHandler && self.connectionHandler.onConnect) {
+                    self.connectionHandler.onConnect();
+                }
             }
 
             return self._backend;

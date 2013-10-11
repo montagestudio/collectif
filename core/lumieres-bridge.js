@@ -203,8 +203,10 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
     },
 
     listTreeAtUrl: {
-        value: function (url) {
-            return this.backend.get(this._backendName).invoke("listTree", url).then(function (fileDescriptors) {
+        value: function (url, exclude) {
+            var path = this.convertBackendUrlToPath(url);
+
+            return this.backend.get(this._backendName).invoke("listTree", path, exclude).then(function (fileDescriptors) {
                 return fileDescriptors.map(function (fd) {
                     return FileDescriptor.create().initWithUrlAndStat(fd.url, fd.stat);
                 });
@@ -214,7 +216,9 @@ exports.LumiereBridge = EnvironmentBridge.specialize({
 
     list: {
         value: function (url) {
-            return this.backend.get(this._backendName).invoke("list", url).then(function (fileDescriptors) {
+            var path = this.convertBackendUrlToPath(url);
+
+            return this.backend.get(this._backendName).invoke("list", path).then(function (fileDescriptors) {
                 return fileDescriptors.map(function (fd) {
                     return FileDescriptor.create().initWithUrlAndStat(fd.url, fd.stat);
                 });

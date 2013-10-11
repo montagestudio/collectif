@@ -1,92 +1,23 @@
 /* global global,opener:true */
-var path = require("path"),
-    fs = require("fs"),
-    minitCreate = require("minit/lib/create").create,
+var fs = require("fs"),
     Q = require("q"),
-    npm = require("npm"),
-    watchr = require("watchr"),
     QFS = require("q-io/fs"),
     PATH = require('path'),
     minimatch = require('minimatch'),
     opener = require("opener");
 
-// Faster promises
-Q.longStackJumpLimit = 0;
-
 exports.getExtensions = function(extensionFolder) {
-    extensionFolder = extensionFolder || path.join(global.clientPath, "extensions");
+    extensionFolder = extensionFolder || PATH.join(global.clientPath, "extensions");
 
     console.log("getExtensions from " + extensionFolder);
     return QFS.listTree(extensionFolder, function (filePath) {
-        return path.extname(filePath).toLowerCase() === ".filament-extension" ? true : (filePath ===  extensionFolder ? false : null); // if false return null so directories aren't traversed
+        return PATH.extname(filePath).toLowerCase() === ".filament-extension" ? true : (filePath ===  extensionFolder ? false : null); // if false return null so directories aren't traversed
     }).then(function (filePaths) {
         return Q.all(filePaths.map(function (filePath) {
             return QFS.stat(filePath).then(function (stat) {
                 return {url: "fs://localhost" + filePath, stat: stat};
             });
         }));
-    });
-};
-
-exports.createApplication = function(name, packageHome) {
-    return minitCreate("digit", {name: name, "packageHome": packageHome});
-};
-
-exports.createComponent = function(name, packageHome, destination) {
-    destination = destination || ".";
-    name = name.replace(/\.reel$/, "");
-    return minitCreate("component", {name: name, packageHome: packageHome, destination: destination})
-    .then(function (minitResults) {
-        return minitResults.resultPath;
-    });
-};
-
-exports.createModule = function(name, packageHome, destination) {
-    destination = destination || ".";
-    return minitCreate("module", {name: name, packageHome: packageHome, destination: destination})
-    .then(function (minitResults) {
-        return path.join(packageHome, destination, minitResults.name);
-    });
-};
-
-exports.installDependencies = function (config) {
-    return Q.ninvoke(npm, "load", (config || null))
-        .then(function (loadedNpm) {
-            return Q.ninvoke(loadedNpm.commands, "install");
-        });
-};
-
-exports.watch = function (path, ignoreSubPaths, handlers) {
-    var ignorePaths = ignoreSubPaths.map(function (ignorePath) {
-        return PATH.resolve(path, ignorePath) + PATH.sep;
-    });
-
-    //TODO make sure we return whatever watcher handle we need to stop watching, probably
-    return Q.invoke(watchr, "watch", {
-        path: path,
-        ignorePaths: ignorePaths,
-        ignoreCommonPatterns: true,
-        listeners: {
-            change: function(changeType, filePath, fileCurrentStat, filePreviousStat) {
-
-                //The client expects directories to hav a trailing slash
-                var fileStat = fileCurrentStat || filePreviousStat;
-                if (fileStat.isDirectory() && !/\/$/.test(filePath)) {
-                    filePath += "/";
-                }
-
-                handlers.invoke("handleChange", changeType, "fs://localhost" + filePath, fileCurrentStat, filePreviousStat).fail(function (err) {
-                    console.log(err);
-                    throw err;
-                }).done();
-            },
-            error: function(err) {
-                handlers.invoke("handleError", err).then(function (err) {
-                    console.log(err);
-                    throw err;
-                }).done();
-            }
-        }
     });
 };
 

@@ -106,11 +106,15 @@ var guard = function (exclude) {
  * @param  {string} path An absolute path to a directory.
  * @return {Promise.<Array.<string>>} A promise for an array of paths.
  */
-exports.listTree = function (path) {
-    return QFS.listTree(path, guard([
-            "node_modules",
-            ".*"
-        ])).then(pathsToUrlStatArray);
+exports.listTree = function (path, extraExclude) {
+    var exclude = ["node_modules", ".*"];
+    if (extraExclude) {
+        if (!Array.isArray(extraExclude)) {
+            extraExclude = [extraExclude];
+        }
+        exclude.push.apply(exclude, extraExclude);
+    }
+    return QFS.listTree(path, guard(exclude)).then(pathsToUrlStatArray);
 };
 
 exports.list = function (path) {
